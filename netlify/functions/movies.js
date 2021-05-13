@@ -25,7 +25,7 @@ exports.handler = async function(event) {
   if (year == undefined || genre == undefined) {
     return {
       statusCode: 200, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      body: `Nope!` // a string of data
+      body: `Error: queryStringParameters must include both year and genre` // a string of data
     }
   }
   else {
@@ -35,13 +35,24 @@ exports.handler = async function(event) {
     }
 
     for (let i=0; i < moviesFromCsv.length; i++) {
-
+      // store each movie in memory
+      let movie = moviesFromCsv[i]
+      // check if the year and genre match the searched parameters, excluding movies with unlisted runtime ("\\N"); if so:
+      if (movie.startYear == year && movie.genres.includes(genre) && movie.runtimeMinutes > 0) {
+      // add the movie to the array of movies to return, returning only the primary title, year released, and genres of the returned movies:
+        returnValue.movies.push(`Primary title:${movie.primaryTitle}, Year released: ${movie.startYear}, Genres: ${movie.genres}`)
+        returnValue.numResults = returnValue.numResults + 1
+      }
+      // if not, return simple error message
+      else {
+        `Error`
+      }
     }
 
     // a lambda function returns a status code and a string of data
     return {
       statusCode: 200, // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-      body: `Hello from the back-end!` // a string of data
+      body: JSON.stringify(returnValue) // a string of data
     }
   }
 }
